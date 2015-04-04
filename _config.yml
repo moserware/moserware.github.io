@@ -1,0 +1,19 @@
+# Site settings
+permalink: /:year/:month/:title.html
+title: Moserware
+author: Jeff Moser
+email: jeff@moserware.com
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://www.moserware.com" 
+twitter_username: jeffmoser
+github_username:  moserware
+feed_url: http://feeds.feedburner.com/Moserware
+
+# Build settings
+markdown: kramdown
+
+kramdown:
+  input: GFM
+  
+disqus: moserware  
+google_analytics_ua: UA-2987024-1

@@ -1,0 +1,82 @@
+---
+layout: post
+title: "Towards Moore's Law Software: Part 3 of 3"
+date: 2008-04-16 07:12:00
+updated: 2008-12-11 00:10:00
+permalink: /2008/04/towards-moores-law-software-part-3-of-3.html
+---
+(**Note:** This is the third and final part of a series. [Part one](http://www.moserware.com/2008/04/towards-moores-law-software-part-1-of-3.html) appeared Monday and [part two](http://www.moserware.com/2008/04/towards-moores-law-software-part-2-of-3.html) appeared yesterday.)
+
+## First "STEPS"
+
+Let's say we want to build the [TCP/IP](http://en.wikipedia.org/wiki/TCP/IP) stack of an operating system. A <span>[traditional implementation](http://lxr.linux.no/linux/net/ipv4/tcp_ipv4.c)</span> might take 10,000 lines of code. What if you rethought the design from the ground up? What if you could make the IP packet handling code look almost identical to the <span>[RFC 791 diagram](http://tools.ietf.org/html/rfc791 "See ")</span> which defines IP? That's exactly what the [Viewpoints team](http://www.vpri.org/html/people/team.htm) did. This is *real code* in their system:
+
+![](/assets/towards-moores-law-software-part-3-of-3/ipheader.png)
+
+and the TCP stack is similar to the [RFC 793 diagram](http://tools.ietf.org/html/rfc793):
+
+![](/assets/towards-moores-law-software-part-3-of-3/tcpheader.png)
+
+That's right; the [ASCII art](http://en.wikipedia.org/wiki/ASCII_art) diagram *is* the code. How did they do it? Well, when you have a powerful "[meta-meta language-language](http://www.vpri.org/pdf/steps_TR-2007-008.pdf "See page 10")" like their IS, you can define languages in a form that reads like a traditional <span>[Backus-Naur Form](http://en.wikipedia.org/wiki/Backus-Naur_form)</span> (BNF) grammar representation:
+
+![](/assets/towards-moores-law-software-part-3-of-3/diagramcode.png "This is all it takes to define a language")
+
+With packet parsing out of the way, the implementation of their TCP algorithm is a little dense, but readable piece of code that handles the [SYN, ACK, and other responses](http://en.wikipedia.org/wiki/Transmission_Control_Protocol):
+
+![](/assets/towards-moores-law-software-part-3-of-3/tcpipcode.png)
+
+With this as our basis, writing a service like the <span>[Daytime Service](http://en.wikipedia.org/wiki/DAYTIME)</span> is quite simple:
+
+![](/assets/towards-moores-law-software-part-3-of-3/daytimeservice.png)
+
+All told, the entire stack is comfortably under 200 lines of code without using any tricks like code generation wizards. The graphics subsystem is similarly clever. It basically defines everything as a polygon (including fonts, windows, etc). It's well under 500 lines of code. They have to be this compact in order to meet their goal of an entire system in under 20,000 lines.
+
+Another interesting metaphor in the project is the use of "massively parallel objects" or what [they refer](http://www.vpri.org/pdf/NSF_prop_RN-2006-002.pdf) to as "particle fields," as [a fundamental part](http://irbseminars.intel-research.net/AlanKay.wmv "Forward to 50:30") of the system:
+
+> "Even less in the mainstream, the “particle/field” idea [PF] has been found more in specialty areas (such as [finite-automata](http://en.wikipedia.org/wiki/Finite_state_machine) and [FEM](http://en.wikipedia.org/wiki/Finite_element_method), [swarm programming](http://en.wikipedia.org/wiki/Swarm_intelligence) in biology, etc.), than as a general system building tool (although it is the center of systems such as [Sketchpad](http://en.wikipedia.org/wiki/Sketchpad) and [TEX](http://en.wikipedia.org/wiki/TeX), and is even found in an operating system such as [MUSE](http://portal.acm.org/citation.cfm?doid=122120.122122)). **Traditional object-oriented design has tended to overbalance its attention on the objects and to give too rudimentary attention to message-passing**. If the center of attention were to be shifted to messaging of all kinds, then the notion of “fields” immediately suggests itself as a more general way to think about inter-object relationships (the previous example of “ants distributing and sensing pheromones” is a good metaphor of this style)."
+
+For example, this idea can be applied to text formatting where you essentially treat *every letter* as its own object. Programming the solution then becomes much easier. You can have simple rules where you just look out for your immediate neighboring letters and then use an extremely efficient message passing system to make your simple code work in a very efficient manner. Here's a sample demonstration from their [NSF proposal](http://www.vpri.org/pdf/NSF_prop_RN-2006-002.pdf "See page 9"):
+
+[![](/assets/towards-moores-law-software-part-3-of-3/particlefieldletters_400.png)](http://www.vpri.org/pdf/NSF_prop_RN-2006-002.pdf "See page 8")
+
+[<img style="MARGIN: 10px 0px 10px 10px" src="/assets/towards-moores-law-software-part-3-of-3/twoflocksjoining_320.jpg" align="right">](http://www.flickr.com/photos/antmoose/91813052/) This reminds me of ideas from "[emergence](http://www.wnyc.org/shows/radiolab/episodes/2005/02/18)" which is a theory that explains how a [flock of birds](http://en.wikipedia.org/wiki/Flocking_%28behavior%29) or an [ant colony](http://en.wikipedia.org/wiki/Swarm_intelligence) can do complex things even though each individual in the system thinks simple thoughts. An individual bird is only thinking in terms of simple rules like "try to follow the guy in front of you" and "get out of the way if something dangerous is nearby." Just these two rules alone can lead to the fantastically complicated formations that we see in the sky.
+
+The massively parallel objects with efficient messaging metaphor leads to algorithms that are simpler in concept because you can focus on the behavior of one little object rather than have to worry about how the whole system works.
+
+## "I want it [now](http://www.youtube.com/watch?v=Z9obgyYB1IU&feature=related)!"
+
+With the Viewpoints team only in their second year of a five year project, we can get a feel for where the future of software development is going, but we can't realistically put it into production quite *yet*. What are our options then?
+
+<span>[Ted Neward](http://blogs.tedneward.com/)</span> likes <span>[to](http://www.oopsla.org/podcasts/Episode13_Aggressive_Learning.mp3)</span> <span>[talk](http://channel9.msdn.com/Showpost.aspx?postid=394826)</span> [about](http://www.dotnetrocks.com/default.aspx?showNum=332) how the next five years will be about programming languages attempting to bridge the "huge disconnect between the practitioners, the guys who get stuff done, and the academics, who think about how we get things done." He says this disconnect exists because "the academics and the practitioners don't talk to each other." I really think that the next five years we'll see significant strides towards improving the situation. If you want to jump ahead of the curve, I think it's worthwhile start imagining a dream language that would help you cut along the "natural joints" of a problem you work on. Can you think of an expressive language like the ASCII art for parsing TCP/IP headers that is targeted for *your* specific problem?
+
+Another interesting observation Ted made was that:
+
+> "... programming languages, much like human languages, are expressions not just of concepts within them, but also the environment in which they were born."
+
+That is, no language is perfect. Each language has a culture that gave birth to it which was usually focused on a particular type of problem. I often find that I put myself in too much of a language box and unfortunately [am happy](http://www.bartleby.com/59/3/ignoranceisb.html) in that box. This led to me asking Alan Kay about the best way to cope with a design problem I had. The power to think in a highly tailored, but not necessarily general, programming language might end up being the best solution to problems we face.
+
+If you go down this path, there are <span>[many](http://www.antlr.org/)</span> <span>[tools](http://jparsec.codehaus.org/NParsec+Tutorial)</span> and some <span>[good articles](http://msdn2.microsoft.com/en-us/magazine/cc136756.aspx)</span> available now to help you get started writing your own custom language. If you want to be a bit more conservative, you [can write an internal domain specific language](http://www.martinfowler.com/bliki/DomainSpecificLanguage.html) inside of host languages like Ruby or C#. However, if you go down the custom route, you'll benefit of doing it now rather than if you had done it 20 years ago because there are huge frameworks at your disposal like Microsoft's <span>[Dynamic Language Runtime](http://en.wikipedia.org/wiki/Dynamic_Language_Runtime)</span> (DLR) that handle most of the "goo" involved in getting your own language up and running. You can leverage a lot of the libraries built on .net or the [JVM](http://en.wikipedia.org/wiki/Java_Virtual_Machine) so that you don't have to worry so much about supporting concerns like database access and handling XML if that's not you're primary concern. This is in contrast to a decade ago when you would have had to build all these supporting libraries just to get people to even think about your language seriously. Even a popular "new" language like [Ruby](http://en.wikipedia.org/wiki/Ruby_programming_language) has taken about 10-12 years to get enough libraries to make it feasible for development. By standing upon the shoulders of frameworks, you can quickly build something that is production worthy.
+
+You can even [use Phoenix](http://channel9.msdn.com/Showpost.aspx?postid=396461), Microsoft's <span><a href="http://en.wikipedia.org/wiki/Phoenix_(compiler_framework)">new backend optimizing compiler</a></span> for *your* language. That way, you don't have to worry about emitting machine code or [IL](http://en.wikipedia.org/wiki/Common_Intermediate_Language). You just [parse](http://en.wikipedia.org/wiki/Parsing) your language into a simple intermediate representation and your generated code will be produced with the same efficiency as the compiler being used for <span>[Windows 7](http://en.wikipedia.org/wiki/Windows_7)</span>. To get you started, the Phoenix SDK will include a LISP compiler as a *sample* app.
+
+## Final Thoughts
+
+> "The future is already here -- it's not just not evenly distributed" -- [William Gibson](http://en.wikipedia.org/wiki/William_Gibson#Visionary_influence_and_prescience)
+
+The widespread adoption of virtual machines like .net's [Common Language Runtime](http://en.wikipedia.org/wiki/Common_Language_Runtime) (CLR) are increasingly making it an option to use custom languages to solve particular problems. This is because your code can be easily used by more mainstream languages like C#. I think this is one of the critical reasons why Microsoft [decided](http://blogs.msdn.com/somasegar/archive/2007/10/17/f-a-functional-programming-language.aspx) to include a functional language, [F#](http://research.microsoft.com/fsharp/fsharp.aspx), into an upcoming version of Visual Studio. Similarly, I enjoyed watching all the different ideas [at the lang.net](http://www.langnetsymposium.com/talks.asp) symposium because they showed the viability of the CLR for many different languages that would also integrate well with mainstream code.
+
+I have to be honest and admit that that I don't envision myself going off and writing my own language *right now*, but at least I'll be looking for ways where a custom language might be a really good fit. I think I need to apply some <span>[meta level thinking](http://ola-bini.blogspot.com/2008/03/meta-level-thinking.html)</span> by perhaps writing some of <span>[my Project Euler solutions](http://www.moserware.com/2007/12/how-legacy-of-dead-mathematician-can.html)</span> in languages that make this easier like [Scala](http://scala-blogs.org/2007/12/project-euler-fun-in-scala.html) or [F#](http://geekswithblogs.net/Erik/archive/2008/02/11/119454.aspx) even though C# is easy for me to use.
+
+This journey towards a "Moore's Law" increase in expressiveness has been a bit long, but I'm starting to see some practical benefits:
+
+1. I'm already feeling expressive differences between [C# 2](http://en.wikipedia.org/wiki/C_Sharp_%28programming_language%29#Features_of_C.23_2.0) and [C# 3](http://en.wikipedia.org/wiki/C_Sharp_%28programming_language%29#Features_of_C.23_3.0). I'm starting to build on [LINQ](http://en.wikipedia.org/wiki/Language_Integrated_Query)'s good ideas in my production code by using ideas from C++'s [Standard Template Library](http://en.wikipedia.org/wiki/Standard_Template_Library) (STL) to make the simple ideas in the code clear and get rid of some of the scaffolding "goo" that exists. Notable areas of influence on my thinking in the .net arena have been [Wintellect](http://www.wintellect.com/)'s [Power Collections](http://www.codeplex.com/PowerCollections) and the [NSTL project](http://www.codeplex.com/nstl). Another variant on this idea is to see more of day to day challenges [as graph problems](http://steve-yegge.blogspot.com/2008/03/get-that-job-at-google.html) and use a library like [Peli](http://blog.dotnetwiki.org/)'s [QuickGraph](http://www.codeplex.com/quickgraph/) to solve them.
+
+2. The "massively parallel objects" metaphor made possible by highly efficient message passing has changed the way that I have thought about some of my hobby programs. Instead of focusing on rules for how a single class can orchestrate hundreds or thousands of objects, I am happily thinking of the object as a bird in a flock. The good news is that this metaphor works well and the same overall macro goal is obtained. I think this is just the start to curbing the problem Alan mentioned of "[there] has been an enormous over-focus on objects and an under-focus on messaging (most so-called object oriented languages don’t really use the looser coupling of messaging, but instead use the much tighter “gear meshing” of procedure calls – this hurts scalability and interoperability)."
+
+3. Reflecting on the Viewpoints' IS meta-meta language-language and what can be built with it has really allowed me to see more of the beauty that real computer science has to offer. Even if I can't put those ideas immediately into production code, I could start down that path with something smaller like [applying the ideas of code-generation](http://www.manning.com/herrington/). The latter is one of the ideas that essentially made [Rails](http://www.rubyonrails.org/) so popular: it's the code that you *don't* have to write yourself that makes it interesting.
+
+The bad news about going down the path of meta level thinking and writing your own custom languages is that the tools are still relatively young and it's a little more work than it will be [ten years](http://www.joelonsoftware.com/articles/fog0000000017.html) from now. The good news is that if you spend the time at least exploring what smart guys like Alan and Charles are doing now, you'll probably have a [comfortable advantage on your competitors](http://www.paulgraham.com/avg.html) when these ideas become mainstream. If it took object oriented programming ideas a [good 25+ years](http://www.moserware.com/2008/03/computing-history-matters.html "I'm thinking of Smalltalk, but also have Simula on the brain") to become popular, the ideas behind language oriented programming and things like massively parallel objects will probably take at least 10 years to hit wide adoption.
+
+Real "Moore's Law" software will have what [Gordon Moore](http://en.wikipedia.org/wiki/Gordon_Moore) noticed about the effects of his own "law" on hardware: it told the industry that they "<span>[[have] to move that fast or they fall behind](http://www.youtube.com/watch?v=gtcLzokagAw "Fast forward to around 39:27")</span>." I think some of the ideas mentioned here might help get towards that philosophy. However, I'm just a secondhand observer. The best place to get started is to look at the [original](http://www.vpri.org/pdf/NSF_prop_RN-2006-002.pdf) [sources](http://www.vpri.org/pdf/steps_TR-2007-008.pdf), or at the very least, the Viewpoints project overview [video](http://irbseminars.intel-research.net/AlanKay.wmv).
+
+I'm interested in your thoughts. What do *you* think might lead to a "Moore's Law" increase in software expressiveness? Do you think it's even possible?
